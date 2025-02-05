@@ -1,0 +1,116 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#define MAX 100  // Maximum number of vertices
+
+// Graph structure
+typedef struct {
+    int V;
+    int adj[MAX][MAX];
+} Graph;
+
+// Stack for storing vertices
+int stack[MAX], top = -1;
+
+// Function to create a graph
+Graph* createGraph(int V) {
+    Graph* graph = (Graph*) malloc(sizeof(Graph));
+    graph->V = V;
+    for (int i = 0; i < V; i++)
+        for (int j = 0; j < V; j++)
+            graph->adj[i][j] = 0;
+    return graph;
+}
+
+// Function to add a directed edge
+void addEdge(Graph* graph, int u, int v) {
+    graph->adj[u][v] = 1;
+}
+
+// First DFS to fill stack (based on finish time)
+void dfs1(Graph* graph, int v, bool visited[]) {
+    visited[v] = true;
+    for (int i = 0; i < graph->V; i++) {
+        if (graph->adj[v][i] && !visited[i]) {
+            dfs1(graph, i, visited);
+        }
+    }
+    stack[++top] = v;  // Push vertex to stack
+}
+
+// Function to reverse (transpose) the graph
+Graph* transposeGraph(Graph* graph) {
+    Graph* transposed = createGraph(graph->V);
+    for (int i = 0; i < graph->V; i++) {
+        for (int j = 0; j < graph->V; j++) {
+            if (graph->adj[i][j]) {
+                transposed->adj[j][i] = 1;  // Reverse the edge
+            }
+        }
+    }
+    return transposed;
+}
+
+// Second DFS to print SCC
+void dfs2(Graph* graph, int v, bool visited[]) {
+    visited[v] = true;
+    printf("%d ", v);
+    for (int i = 0; i < graph->V; i++) {
+        if (graph->adj[v][i] && !visited[i]) {
+            dfs2(graph, i, visited);
+        }
+    }
+}
+
+// Kosaraju's algorithm to find and print all SCCs
+void findSCCs(Graph* graph) {
+    bool visited[MAX] = {false};
+
+    // Step 1: Fill stack with vertices in finishing order
+    for (int i = 0; i < graph->V; i++) {
+        if (!visited[i]) {
+            dfs1(graph, i, visited);
+        }
+    }
+
+    // Step 2: Transpose the graph
+    Graph* transposed = transposeGraph(graph);
+
+    // Step 3: Process vertices in order of decreasing finish time
+    for (int i = 0; i < MAX; i++) visited[i] = false;
+
+    printf("Strongly Connected Components:\n");
+    while (top != -1) {
+        int v = stack[top--];  // Pop from stack
+        if (!visited[v]) {
+            dfs2(transposed, v, visited);
+            printf("\n");
+        }
+    }
+
+    free(transposed);  // Free memory
+}
+
+// Driver code
+int main() {
+    int V, E;
+    printf("Enter number of vertices: ");
+    scanf("%d", &V);
+    printf("Enter number of edges: ");
+    scanf("%d", &E);
+
+    Graph* graph = createGraph(V);
+
+    printf("Enter edges (u v):\n");
+    for (int i = 0; i < E; i++) {
+        int u, v;
+        scanf("%d %d", &u, &v);
+        addEdge(graph, u, v);
+    }
+
+    findSCCs(graph);
+
+    free(graph);
+    return 0;
+}
