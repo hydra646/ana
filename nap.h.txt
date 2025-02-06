@@ -1,0 +1,60 @@
+#include <stdio.h>
+
+// Function to get the maximum of two integers
+int max(int a, int b) {
+    return (a > b) ? a : b;
+}
+
+// Function to solve the knapsack problem
+int knapsack(int M, int wt[], int pr[], int n) {
+    int i, w;
+    int knap[n + 1][M + 1];
+
+    // Initialize the knap array
+    for (i = 0; i <= n; i++) {
+        for (w = 0; w <= M; w++) {
+            if (i == 0 || w == 0) {
+                knap[i][w] = 0;
+            } else if (wt[i - 1] <= w) {
+                knap[i][w] = max(pr[i - 1] + knap[i - 1][w - wt[i - 1]], knap[i - 1][w]);
+            } else {
+                knap[i][w] = knap[i - 1][w];
+            }
+        }
+    }
+    return knap[n][M];
+}
+
+int main() {
+    int M, n, pr[100], wt[100];
+
+    // Input number of objects
+    printf("Enter the number of objects: ");
+    scanf("%d", &n);
+
+    // Input weight of the knapsack
+    printf("Enter the weight of knapsack: ");
+    scanf("%d", &M);
+
+    // Input weights of the objects
+    printf("Enter the weights: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &wt[i]);
+    }
+
+    // Input profits of the objects
+    printf("Enter the profits: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &pr[i]);
+    }
+
+    // Output the result
+    printf("Answer is: %d\n", knapsack(M, wt, pr, n));
+
+    return 0;
+}
+
+
+
+
+
